@@ -70,7 +70,7 @@ void add_sphere( struct matrix * edges,
 
   struct matrix* m = generate_sphere(cx,cy,cz,r,step);
 
-  for(int x = 0; x < step; x++){
+  for(int x = 0; x < step*step; x++){
     add_edge(edges, m->m[0][x],m->m[1][x],m->m[2][x],m->m[0][x],m->m[1][x],m->m[2][x]);
   }
 
@@ -95,14 +95,16 @@ struct matrix * generate_sphere(double cx, double cy, double cz,
 
   double s = 0;
   double t = 0;
-  double rot;
-  double rStep = 1/step;
+  double rot1, rot2;
+  double rStep = 1/(double)step;
+  //printf("%f\n", rStep);
 
   for(int x = 0; x < step; x++){
-    rot = cos(M_PI * 2 * s);
+    rot1 = cos(M_PI * 2 * s);
+    rot2 = sin(M_PI * 2 * s);
     t = 0;
     for(int y = 0; y < step; y++){
-      add_point(m, (r * cos(M_PI * t)) + cx, (r * sin(M_PI * t) * rot) + cy, (r * sin(M_PI * t) * rot) + cz);
+      add_point(m, (r * cos(M_PI * t)) + cx, (r * sin(M_PI * t) * rot1) + cy, (r * sin(M_PI * t) * rot2) + cz);
       t+=rStep;
     }
     s+=rStep;
@@ -130,7 +132,14 @@ struct matrix * generate_sphere(double cx, double cy, double cz,
 void add_torus( struct matrix * edges,
                 double cx, double cy, double cz,
                 double r1, double r2, int step ) {
-  return;
+
+  struct matrix* m = generate_torus(cx,cy,cz,r1,r2,step);
+
+  for(int x = 0; x < step*step; x++){
+    add_edge(edges, m->m[0][x],m->m[1][x],m->m[2][x],m->m[0][x],m->m[1][x],m->m[2][x]);
+  }
+
+  free_matrix(m);
 }
 
 /*======== void generate_torus() ==========
@@ -148,7 +157,30 @@ void add_torus( struct matrix * edges,
   ====================*/
 struct matrix * generate_torus( double cx, double cy, double cz,
                                 double r1, double r2, int step ) {
-  return NULL;
+
+  struct matrix* m = new_matrix(4,4);
+
+  double s = 0;
+  double t = 0;
+  double rot1, rot2;
+  double rStep = 1/(double)step;
+  //printf("%f\n", rStep);
+
+  for(int x = 0; x < step; x++){
+    rot1 = cos(M_PI * 2 * s);
+    rot2 = -sin(M_PI * 2 * s);
+    t = 0;
+    for(int y = 0; y < step; y++){
+      add_point(m, 
+        (rot1 * (r1 * cos(2 * M_PI * t) + r2)) + cx,
+        r1 * sin(2 * M_PI * t) + cy,
+        (rot2 * (r1*cos(2 * M_PI * t) + r2)) + cz);
+      t+=rStep;
+    }
+    s+=rStep;
+  }
+
+  return m;
 }
 
 /*======== void add_circle() ==========
